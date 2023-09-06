@@ -67,6 +67,12 @@ class Keeper {
     this.tries = 0;
     this.haveSetLogs = false;
     this.notificationService = notificationService;
+
+    try {
+      this.setLogs();
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async load(_id: mongoose.Types.ObjectId) {
@@ -269,11 +275,11 @@ class Keeper {
       throw new Error("Keeper is not initialized properly");
     }
     if (!this.haveSetLogs && fs.existsSync(getCIDFile(this._id))) {
-      await this.handleRunningStatus();
       exec(
         `docker logs -f ${this.containerId} >& ${getLogsFile(this._id)}`,
         (error, stdout, stderr) => {
           if (error) {
+            console.log(`can't catch docker logs`, error);
             return;
           }
           this.haveSetLogs = true;
@@ -340,10 +346,12 @@ class Keeper {
     }
 
     this.container.stdout?.on("data", async (data) => {
+      await this.handleRunningStatus();
       await this.setLogs();
     });
 
     this.container.stderr?.on("data", async (data) => {
+      await this.handleRunningStatus();
       await this.setLogs();
     });
 
@@ -522,7 +530,7 @@ class Keeper {
         }
       });
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   }
 
