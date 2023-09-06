@@ -68,11 +68,13 @@ class Keeper {
     this.haveSetLogs = false;
     this.notificationService = notificationService;
 
-    try {
-      this.setLogs();
-    } catch (err) {
-      console.log(err);
-    }
+    setInterval(() => {
+      try {
+        this.setLogs();
+      } catch (err) {
+        console.log(err);
+      }
+    }, 15 * 1000);
   }
 
   async load(_id: mongoose.Types.ObjectId) {
@@ -272,7 +274,7 @@ class Keeper {
 
   async setLogs() {
     if (!this._id) {
-      throw new Error("Keeper is not initialized properly");
+      return;
     }
     if (!this.haveSetLogs && fs.existsSync(getCIDFile(this._id))) {
       exec(
