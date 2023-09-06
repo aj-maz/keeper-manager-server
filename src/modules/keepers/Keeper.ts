@@ -209,7 +209,8 @@ class Keeper {
 
   setContainerId() {
     if (!this._id) {
-      throw new Error("Keeper is not initialized properly");
+      return;
+      //throw new Error("Keeper is not initialized properly");
     }
     if (this.containerExists()) {
       this.containerId = fs.readFileSync(getCIDFile(this._id)).toString();
@@ -276,6 +277,7 @@ class Keeper {
     if (!this._id) {
       return;
     }
+    this.setContainerId();
     if (!this.haveSetLogs && fs.existsSync(getCIDFile(this._id))) {
       exec(
         `docker logs -f ${this.containerId} > ${getLogsFile(this._id)} 2>&1`,
