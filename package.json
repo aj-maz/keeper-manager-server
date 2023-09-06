@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "start:dev": "npx nodemon",
-    "build": "rimraf ./build && tsc"
+    "build": "rimraf ./build && tsc",
+    "start": "npm run build && node build/index.js"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.2",
