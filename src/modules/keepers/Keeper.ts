@@ -196,7 +196,7 @@ class Keeper {
     }
     console.log(`system rpc uri setted: ${this.rpcUri}`);
     console.log(`system image setted: ${this.systemImage}`);
-    this.handleTransactions();
+    //this.handleTransactions();
     this.handleBalances();
   }
 
@@ -278,7 +278,7 @@ class Keeper {
     }
     if (!this.haveSetLogs && fs.existsSync(getCIDFile(this._id))) {
       exec(
-        `docker logs -f ${this.containerId} >& ${getLogsFile(this._id)}`,
+        `docker logs -f ${this.containerId} > ${getLogsFile(this._id)} 2>&1`,
         (error, stdout, stderr) => {
           if (error) {
             console.log(`can't catch docker logs`, error);
