@@ -279,20 +279,23 @@ class Keeper {
     }
     this.setContainerId();
     if (!this.haveSetLogs && fs.existsSync(getCIDFile(this._id))) {
-      console.log(
-        `docker logs -f ${this.containerId} > ${getLogsFile(this._id)} 2>&1`
-      );
-      exec(
-        `docker logs -f ${this.containerId} > ${getLogsFile(this._id)} 2>&1`,
-        (error, stdout, stderr) => {
-          console.log(error, stdout, stderr);
-          if (error) {
-            console.log(`can't catch docker logs`, error);
-            return;
-          }
-          this.haveSetLogs = true;
-        }
-      );
+      console.log("docker", [
+        "logs",
+        "-f",
+        String(this.containerId),
+        ">",
+        getLogsFile(this._id),
+        "2>&1",
+      ]);
+      spawn("docker", [
+        "logs",
+        "-f",
+        String(this.containerId),
+        ">",
+        getLogsFile(this._id),
+        "2>&1",
+      ]);
+      this.haveSetLogs = true;
     }
   }
 
