@@ -147,6 +147,15 @@ const resolverCreator = async ({
         const keeper = keeperManager.getKeeper(keeperId);
         return keeper?.export();
       },
+      setKeeperLogs: async (
+        _: any,
+        { keeperId }: { keeperId: mongoose.Types.ObjectId },
+        { address }: { address: string }
+      ) => {
+        await protectRoute(address);
+        const keeper = keeperManager.getKeeper(keeperId);
+        return keeper?.setLogs();
+      },
     },
   };
 };

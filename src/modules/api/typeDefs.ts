@@ -150,7 +150,6 @@ const typeDefs = `#graphql
 
         seen(address: ID!): String
 
-
         startKeeper(
             system: String!
             network: String!
@@ -159,9 +158,10 @@ const typeDefs = `#graphql
             options: [String!]!
         ): Keeper!
         stopKeeper(keeperId: String!): String
+        
         restartKeeper(keeperId: String!): String
         exportWallet(keeperId: String!): String!
-
+        setKeeperLogs(keeperId: String!): String!
     }
 `;
 

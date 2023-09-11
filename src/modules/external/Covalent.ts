@@ -1,7 +1,7 @@
 import axios from "axios";
 
 class Covalent {
-  covalentAddress: string = "https://api.covalenthq.com/v1";
+  covalentAddress: string = "http://206.188.197.109/v1";
   covalentNetworkIdentifier: string;
   covalentKey: string;
 
