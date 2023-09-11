@@ -67,14 +67,6 @@ class Keeper {
     this.tries = 0;
     this.haveSetLogs = false;
     this.notificationService = notificationService;
-
-    setInterval(() => {
-      try {
-        this.setLogs();
-      } catch (err) {
-        console.log(err);
-      }
-    }, 15 * 1000);
   }
 
   async load(_id: mongoose.Types.ObjectId) {
@@ -196,7 +188,7 @@ class Keeper {
     }
     console.log(`system rpc uri setted: ${this.rpcUri}`);
     console.log(`system image setted: ${this.systemImage}`);
-    //this.handleTransactions();
+    this.handleTransactions();
     this.handleBalances();
   }
 
