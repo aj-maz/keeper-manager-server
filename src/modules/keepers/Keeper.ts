@@ -265,29 +265,31 @@ class Keeper {
     this.handleContainerEvents();
   }
 
-  async setLogs() {
+  async setLogs(forced: boolean = false) {
     if (!this._id) {
       return;
     }
     this.setContainerId();
-    if (!this.haveSetLogs && fs.existsSync(getCIDFile(this._id))) {
-      console.log("docker", [
-        "logs",
-        "-f",
-        String(this.containerId),
-        ">",
-        getLogsFile(this._id),
-        "2>&1",
-      ]);
-      spawn("docker", [
-        "logs",
-        "-f",
-        String(this.containerId),
-        ">",
-        getLogsFile(this._id),
-        "2>&1",
-      ]);
-      this.haveSetLogs = true;
+    if (fs.existsSync(getCIDFile(this._id))) {
+      if (!this.haveSetLogs || forced) {
+        console.log("docker", [
+          "logs",
+          "-f",
+          String(this.containerId),
+          ">",
+          getLogsFile(this._id),
+          "2>&1",
+        ]);
+        spawn("docker", [
+          "logs",
+          "-f",
+          String(this.containerId),
+          ">",
+          getLogsFile(this._id),
+          "2>&1",
+        ]);
+        this.haveSetLogs = true;
+      }
     }
   }
 

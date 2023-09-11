@@ -73,8 +73,8 @@ class NotificationService {
         Keeper ${notification.keeperAddress} has an ${
           notification.payload.name
         } Notification.
-        Params are: ${notification.payload.params.join(", ")}
-      `
+          Params are: ${notification.payload.params.join(", ")}
+        `
       );
     } else if (context === "transaction") {
       this.telegramService.sendMessage(`
