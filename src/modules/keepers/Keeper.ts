@@ -280,14 +280,20 @@ class Keeper {
           getLogsFile(this._id),
           "2>&1",
         ]);
-        spawn("docker", [
-          "logs",
-          "-f",
-          String(this.containerId),
-          ">",
-          getLogsFile(this._id),
-          "2>&1",
-        ]);
+        spawn(
+          "docker",
+          [
+            "logs",
+            "-f",
+            String(this.containerId),
+            ">",
+            getLogsFile(this._id),
+            "2>&1",
+          ],
+          {
+            shell: true,
+          }
+        );
         this.haveSetLogs = true;
       }
     }
