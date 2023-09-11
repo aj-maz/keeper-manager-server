@@ -154,7 +154,8 @@ const resolverCreator = async ({
       ) => {
         await protectRoute(address);
         const keeper = keeperManager.getKeeper(keeperId);
-        return keeper?.setLogs();
+        keeper?.setLogs();
+        return "done";
       },
     },
   };
