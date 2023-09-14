@@ -135,12 +135,19 @@ const typeDefs = `#graphql
         nonce: Int
     }
 
+    type Safe {
+        id: String
+        debt: String
+        liquidationPrice: String
+    }
+
     type Query {
         users: [User!]!
         me: User
         keepers: [Keeper!]!
         keeper(id: ID!): Keeper
         systems: [System!]!
+        raiSafes: [Safe!]!
     }
 
     type Mutation {

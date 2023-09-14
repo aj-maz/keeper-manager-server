@@ -2,14 +2,13 @@ import "dotenv/config";
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import connectDB from "./db";
+import redis from "redis";
 
 import KeeperManager from "./modules/keepers/KeepersManager";
 import resolverCreator from "./modules/api/resolvers";
 import typeDefs from "./modules/api/typeDefs";
-
-import Covalent from "./modules/external/Covalent";
-import Transaction from "./modules/transaction/Transaction";
 import NotificationService from "./modules/notifications/NotificationService";
+import AnalyticsService from "./modules/analytics/AnalyticsService";
 
 import Users from "./modules/users/Users";
 import jwt from "jsonwebtoken";
@@ -18,6 +17,7 @@ const main = async () => {
   await connectDB();
 
   const notificationService = new NotificationService();
+  const analyticsService = new AnalyticsService();
 
   const keeperManager = new KeeperManager(notificationService);
   await keeperManager.loadKeepers();
@@ -28,6 +28,7 @@ const main = async () => {
   const resolvers = await resolverCreator({
     keeperManager,
     notificationService,
+    analyticsService,
   });
 
   const server = new ApolloServer({

@@ -25,9 +25,11 @@
     "ethereumjs-util": "^7.1.5",
     "ethereumjs-wallet": "^1.0.2",
     "ethers": "^6.7.1",
+    "geb.js": "^1.1.40",
     "graphql": "^16.8.0",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.3",
+    "redis": "^4.6.8",
     "telegraf": "^4.12.2"
   }
 }

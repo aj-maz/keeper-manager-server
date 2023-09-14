@@ -1,5 +1,6 @@
 import KeeperManager from "../keepers/KeepersManager";
 import NotificationService from "../notifications/NotificationService";
+import AnalyticsService from "../analytics/AnalyticsService";
 import Keeper from "../keepers/Keeper";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
@@ -23,9 +24,11 @@ const protectRoute = async (address: string) => {
 const resolverCreator = async ({
   keeperManager,
   notificationService,
+  analyticsService,
 }: {
   keeperManager: KeeperManager;
   notificationService: NotificationService;
+  analyticsService: AnalyticsService;
 }) => {
   return {
     Query: {
@@ -52,6 +55,7 @@ const resolverCreator = async ({
         { address }: { address: string }
       ) => await keeperManager.getKeeper(id)?.get(),
       systems: () => getSystems(),
+      raiSafes: () => analyticsService.getSafes(),
     },
     Mutation: {
       getNonce: async (_: any, { address }: { address: string }) => {
