@@ -11,6 +11,7 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^20.5.0",
+    "@types/secure-random-password": "^0.2.1",
     "nodemon": "^3.0.1",
     "rimraf": "^5.0.1",
     "ts-node": "^10.9.1",
@@ -30,6 +31,7 @@
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.3",
     "redis": "^4.6.8",
+    "secure-random-password": "^0.2.3",
     "telegraf": "^4.12.2"
   }
 }

@@ -20,6 +20,7 @@ class NotificationService {
     if (!uniqueHelper) {
       const notification = new NotificationModel({ keeperAddress, payload });
       await notification.save();
+      this.sendTelegram(notification);
     } else {
       const foundUnique = await NotificationModel.findOne({ uniqueHelper });
       if (foundUnique) return;

@@ -2,7 +2,7 @@ import fs from "fs";
 import { spawn, exec, ChildProcess } from "child_process";
 import mongoose from "mongoose";
 import { ethers } from "ethers";
-import axios from "axios";
+import * as passwordGenerator from "secure-random-password";
 
 import {
   KeeperCreationInput,
@@ -129,7 +129,7 @@ class Keeper {
     privateKey,
     options,
   }: KeeperCreationInput) {
-    const password = process.env.PASSWORD;
+    const password = passwordGenerator.randomPassword({ length: 32 });
     if (!password) {
       throw new Error("Wallet password is not provided");
     }
