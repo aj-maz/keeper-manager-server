@@ -8,7 +8,9 @@ class AnalyticsService {
   }
 
   async init() {
-    const client = redis.createClient();
+    const client = redis.createClient({
+      url: `${process.env.REDIS_PROTOCOL}://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    });
     await client.connect();
     this.redisClient = client;
     this.startFetchig();

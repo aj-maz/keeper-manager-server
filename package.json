@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start:dev": "npx nodemon",
+    "start:dev": "nodemon src/index.ts",
     "build": "rimraf ./build && tsc",
     "start": "npm run build && node build/index.js"
   },

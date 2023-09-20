@@ -1,20 +1,54 @@
-version: '3'
-services: 
+version: "3"
+services:
   redis:
     image: redis:7.2.1-alpine
     container_name: redis
     networks:
-      - analytics-network
-  app:
-    image: analytics-server
-    container_name: app
-    build: keeper-manager-analytics-server/.
-    depends_on:
-      - redis
+      - keepers-network
+  mongodb:
+    image: mongo:7.0.2-jammy
+    container_name: mongodb
+    restart: unless-stopped
+    volumes:
+      - ./db:/data/db
+    networks:
+      - keepers-network
     env_file:
       - .env
+  #analytics-server:
+  #  image: lib/rai-analytics-server
+  #  container_name: rai-analytics-server
+  #  build: lib/rai-analytics-server/.
+  #  depends_on:
+  #    - redis
+  #  env_file:
+  #    - .env
+  #  networks:
+  #    - keepers-network
+  manager-server:
+    image: manager-server
+    container_name: manager-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    volumes:
+      - ./src:/manager/src
+      - ./nodemon.json:/manager/src/nodemon.json
+      - ./files:/manager/files
+    depends_on:
+      - redis
+      - mongodb
+    #  - analytics-server
+    expose:
+      - "4000"
+    ports:
+      - "4000:4000"
+    command: npm run start:dev
     networks:
-      - analytics-network
+      - keepers-network
+    env_file:
+      - .env
 
 networks:
-  analytics-network:
+  keepers-network:

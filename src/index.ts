@@ -2,7 +2,6 @@ import "dotenv/config";
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import connectDB from "./db";
-import redis from "redis";
 
 import KeeperManager from "./modules/keepers/KeepersManager";
 import resolverCreator from "./modules/api/resolvers";
