@@ -1,0 +1,20 @@
+version: '3'
+services: 
+  redis:
+    image: redis:7.2.1-alpine
+    container_name: redis
+    networks:
+      - analytics-network
+  app:
+    image: analytics-server
+    container_name: app
+    build: keeper-manager-analytics-server/.
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    networks:
+      - analytics-network
+
+networks:
+  analytics-network:

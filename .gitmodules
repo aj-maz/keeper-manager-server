@@ -1,0 +1,9 @@
+[submodule "tai-keeper"]
+	path = lib/tai-keeper
+	url = https://github.com/money-god/auction-keeper.git
+[submodule "rai-analytics-server"]
+	path = lib/rai-analytics-server
+	url = https://github.com/ajand/keeper-manager-analytics-server.git
+[submodule "rai-keeper"]
+	path = lib/rai-keeper
+	url = https://github.com/reflexer-labs/auction-keeper.git
