@@ -1,9 +1,36 @@
+const getAllRpcUris = (chainIdentifier: string) => {
+  const rpcUris = [];
+  console.log(process.env[`${chainIdentifier}_RPC_URI_${1}`]);
+  for (let i = 1; ; i++) {
+    const uri = process.env[`${chainIdentifier}_RPC_URI_${i}`];
+    if (!uri) break;
+    rpcUris.push(uri);
+  }
+  console.log(rpcUris);
+  return rpcUris;
+};
+
+const rpcGetter = (chainIdentifier: string) => {
+  const rpcUris = getAllRpcUris(chainIdentifier);
+  if (rpcUris.length > 0) {
+    const randomIndex = Math.floor(Math.random() * rpcUris.length);
+    return rpcUris[randomIndex];
+  } else {
+    // Handle the case where no valid RPC URIs are defined
+    throw new Error(`No valid ${chainIdentifier}_RPC_URI variables found.`);
+  }
+};
+
 export const networks = {
   mainnet: {
-    rpc_uri: process.env.MAINNET_RPC_URI,
+    get rpc_uri() {
+      return rpcGetter("MAINNET");
+    },
   },
   goerli: {
-    rpc_uri: process.env.GOERLI_RPC_URI,
+    get rpc_uri() {
+      return rpcGetter("GOERLI");
+    },
   },
 };
 
