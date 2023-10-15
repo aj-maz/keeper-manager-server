@@ -20,6 +20,10 @@ const KeeperSchema = new mongoose.Schema<IKeeper>(
       type: "string",
       required: true,
     },
+    serviceName: {
+      type: "string",
+      required: true,
+    },
     status: {
       type: "number",
       default: KeeperStatus.INITIALIZING,

@@ -3,6 +3,7 @@ import { spawn, exec, ChildProcess } from "child_process";
 import mongoose from "mongoose";
 import { ethers } from "ethers";
 import * as passwordGenerator from "secure-random-password";
+import Docker from "dockerode";
 
 import {
   KeeperCreationInput,
@@ -21,9 +22,28 @@ import Covalent from "../external/Covalent";
 import NotificationService from "../notifications/NotificationService";
 import Transaction from "../transaction/Transaction";
 
-const RECOVER_LIMIT = 10;
+let docker = new Docker({ socketPath: "/var/run/docker.sock" });
+
+const notMain = async () => {
+  console.log("trying to get service");
+  try {
+    const service = docker.getService("hardcore_wozniak");
+
+    const serviceTasks = await docker.listTasks({
+      service: service.ID,
+    });
+
+    //console.log(await service.logs({ stdout: true, stderr: true }));
+    console.log(serviceTasks[0].Status.State);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+//notMain()
 
 class Keeper {
+  docker: Docker;
   transactionInterval = 60 * 1000;
   transactionsMapping: Map<string, Transaction> = new Map();
 
@@ -38,6 +58,10 @@ class Keeper {
 
   status: KeeperStatus;
   tries: number;
+
+  serviceName: string | undefined;
+  service: Docker.Service | undefined;
+
   containerId: string | undefined;
   container: ChildProcess | undefined;
 
@@ -63,10 +87,12 @@ class Keeper {
   };
 
   constructor(notificationService: NotificationService) {
+    console.log(`constructing a keeper`);
     this.status = KeeperStatus.INITIALIZING;
     this.tries = 0;
     this.haveSetLogs = false;
     this.notificationService = notificationService;
+    this.docker = new Docker({ socketPath: "/var/run/docker.sock" });
   }
 
   async load(_id: mongoose.Types.ObjectId) {
@@ -81,6 +107,7 @@ class Keeper {
         this.wallet = new Wallet();
         await this.wallet.load(keeper.wallet);
         this.status = keeper.status;
+        this.serviceName = keeper.serviceName;
         this.tries = keeper.tries;
         this.setSystemParams();
       } else {
@@ -91,14 +118,7 @@ class Keeper {
     }
     this.setSystemParams();
     // run the container
-    this.handleContainer();
-  }
-
-  async restartKeeper() {
-    console.log(`resetting the keeper ${this._id}`);
-    await this.resetTries();
-    await this.changeKeeperStatus(KeeperStatus.PREPARING);
-    this.handleContainer();
+    this.handleService();
   }
 
   async save() {
@@ -117,6 +137,7 @@ class Keeper {
           status: this.status,
           options: this.options,
           containerId: this.containerId,
+          serviceName: this.serviceName,
         },
       }
     );
@@ -137,6 +158,8 @@ class Keeper {
     await this.wallet.generateKeyPassFile(privateKey, password);
     //await wallet.load();
 
+    this.serviceName = `${network}${collateral}_${this.wallet.address}`;
+
     // create the keeper - set properties
     const keeperDoc = new KeeperModel({
       system,
@@ -144,6 +167,7 @@ class Keeper {
       collateral,
       wallet: this.wallet.address,
       options,
+      serviceName: this.serviceName,
     });
     keeperDoc.save();
     console.log(`keeper saved. keeper id: ${keeperDoc._id}`);
@@ -159,7 +183,7 @@ class Keeper {
 
     this.setSystemParams();
     // run the container
-    this.handleContainer();
+    this.handleService();
   }
 
   setSystemParams() {
@@ -192,200 +216,92 @@ class Keeper {
     this.handleBalances();
   }
 
-  containerExists() {
-    if (!this._id) {
+  async handleService() {
+    // Check if service exists
+    if (!this.serviceName) {
       throw new Error("Keeper is not initialized properly");
     }
-    return fs.existsSync(getCIDFile(this._id));
-  }
-
-  setContainerId() {
-    if (!this._id) {
-      return;
-      //throw new Error("Keeper is not initialized properly");
-    }
-    if (this.containerExists()) {
-      this.containerId = fs.readFileSync(getCIDFile(this._id)).toString();
-      console.log(`container id setted: ${this.containerId}`);
+    this.service = docker.getService(this.serviceName);
+    await this.changeKeeperStatus(KeeperStatus.RUNNING);
+    try {
+      console.log(await this.service.inspect());
+    } catch (err) {
+      await this.createService();
     }
   }
 
-  async handleContainer() {
-    if (this.status === KeeperStatus.STOPPED) {
-      return;
-    }
-    if (this.containerExists()) {
-      this.setContainerId();
-      await this.startContainer();
-    } else {
-      await this.runContainer();
-    }
-  }
-
-  async isContainerRunning() {
-    if (!this.containerId)
-      throw new Error("Can't check the container without container id");
-    return new Promise((resolve, reject) => {
-      // Use the `docker ps` command to list running containers and grep for the container ID
-      const cmd = `docker ps --quiet --filter "id=${this.containerId}"`;
-      exec(cmd, (error, stdout, stderr) => {
-        if (error) {
-          // If there's an error running the command, reject the promise
-          reject(error);
-          return;
-        }
-        // If the container ID is in the output, it means the container is running
-        const isRunning = this.containerId?.includes(stdout.trim());
-        resolve(isRunning);
-      });
-    });
-  }
-
-  async startContainer() {
-    if (!this.containerId) {
-      throw new Error("Can't start the keeper with no containerId");
-    }
-    this.handleTries();
-
-    if (await this.isContainerRunning()) {
-      await this.changeKeeperStatus(KeeperStatus.RUNNING);
-    } else if (this.tries > 0) {
-      await this.changeKeeperStatus(KeeperStatus.RECOVERING);
-    } else {
-      await this.changeKeeperStatus(KeeperStatus.PREPARING);
-    }
-    this.container = spawn("docker", ["start", "-a", this.containerId]);
-
-    this.handleContainerEvents();
-  }
-
-  async runContainer() {
-    await this.changeKeeperStatus(KeeperStatus.PREPARING);
-    this.container = spawn("docker", this.getRunningContainerArray());
-    this.handleContainerEvents();
-  }
-
-  async setLogs(forced: boolean = false) {
-    if (!this._id) {
-      return;
-    }
-    this.setContainerId();
-    if (fs.existsSync(getCIDFile(this._id))) {
-      if (!this.haveSetLogs || forced) {
-        console.log("docker", [
-          "logs",
-          "-f",
-          String(this.containerId),
-          ">",
-          getLogsFile(this._id),
-          "2>&1",
-        ]);
-        spawn(
-          "docker",
-          [
-            "logs",
-            "-f",
-            String(this.containerId),
-            ">",
-            getLogsFile(this._id),
-            "2>&1",
-          ],
-          {
-            shell: true,
-          }
-        );
-        this.haveSetLogs = true;
-      }
-    }
-  }
-
-  async handleRunningStatus() {
-    if (this.status !== KeeperStatus.STOPPING) {
-      this.startingTime = new Date();
-      await this.changeKeeperStatus(KeeperStatus.RUNNING);
-    }
-  }
-
-  async stopContainer() {
-    if (!this._id) throw new Error("Can't stop a container with no id.");
-    await this.changeKeeperStatus(KeeperStatus.STOPPING);
-    const containerId = fs.readFileSync(getCIDFile(this._id)).toString();
-    exec(`docker stop ${containerId}`, async (error, stdout, stderr) => {
-      if (error) {
-        return;
-      }
-    });
-  }
-
-  getRunningContainerArray() {
-    // TODO: must add options to this
+  async createService() {
+    console.log(
+      this.serviceName,
+      this.wallet,
+      this._id,
+      this.rpcUri,
+      this.systemImage,
+      this.wallet?.address,
+      this.collateral,
+      this.options
+    );
     if (
-      !this.wallet?.path ||
+      !this.serviceName ||
       !this._id ||
       !this.rpcUri ||
       !this.systemImage ||
-      !this.wallet.address ||
+      !this.wallet?.address ||
       !this.collateral ||
       !this.options
     ) {
       throw new Error("Keeper is not initialized properly");
     }
-    return [
-      "run",
-      "-v",
-      `${this.wallet.keystore}:/keystore`,
-      "--cidfile",
-      getCIDFile(this._id),
-      this.systemImage,
-      "--rpc-uri",
-      this.rpcUri,
-      "--safe-engine-system-coin-target",
-      "ALL",
-      "--eth-from",
-      ethers.getAddress(this.wallet.address),
-      "--eth-key",
-      `key_file=/keystore/key-${this.wallet.address.toLowerCase()}.json,pass_file=/keystore/${this.wallet.address.toLowerCase()}.pass`,
-      "--collateral-type",
-      this.collateral,
-      ...this.options.map((option) => `--${option}`),
-    ];
+
+    const serviceParams = {
+      Name: this.serviceName,
+      TaskTemplate: {
+        ContainerSpec: {
+          Image: "tai-keeper",
+          Args: [
+            "--rpc-uri",
+            this.rpcUri,
+            "--eth-from",
+            ethers.getAddress(String(this.wallet?.address)),
+            "--eth-key",
+            `key_file=/keystore/key-${this.wallet.address.toLowerCase()}.json,pass_file=/keystore/${this.wallet.address.toLowerCase()}.pass`,
+            "--safe-engine-system-coin-target",
+            "ALL",
+            "--type=collateral",
+            "--collateral-type",
+            this.collateral,
+            ...this.options.map((option) => `--${option}`),
+          ],
+          Mounts: [
+            {
+              Type: "bind",
+              // TODO: change it to be read from .env
+              Source:
+                "/Users/ajand/Projects/keeper-manager/server/files/wallets",
+              Target: "/keystore",
+            },
+          ],
+        },
+      },
+    };
+
+    try {
+      // @ts-ignore
+      docker.createService(serviceParams);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
-  handleContainerEvents() {
-    if (!this.container) {
-      throw new Error("Can't handle container events before container exists");
+  async stopContainer() {
+    if (!this.serviceName)
+      throw new Error("Can't stop a container with no service name.");
+    try {
+      await this.service?.remove();
+      await this.changeKeeperStatus(KeeperStatus.STOPPED);
+    } catch (err) {
+      console.error(err);
     }
-
-    this.container.stdout?.on("data", async (data) => {
-      await this.handleRunningStatus();
-      await this.setLogs();
-    });
-
-    this.container.stderr?.on("data", async (data) => {
-      await this.handleRunningStatus();
-      await this.setLogs();
-    });
-
-    this.container.on("exit", async (r) => {
-      console.log(`keeper is exiting `, r);
-      if (this.status !== KeeperStatus.STOPPING) {
-        await this.changeKeeperStatus(KeeperStatus.FAILED);
-        await this.handleTries();
-        if (RECOVER_LIMIT > this.tries) {
-          console.log(
-            `recovering keeper ${this._id} for the ${this.tries} time`
-          );
-          this.handleContainer();
-        } else {
-          console.log(
-            `giving up on recovering keeper ${this._id} after ${this.tries} failed attempt`
-          );
-        }
-      } else {
-        await this.handleTries();
-        await this.changeKeeperStatus(KeeperStatus.STOPPED);
-      }
-    });
   }
 
   async export() {
@@ -417,38 +333,12 @@ class Keeper {
     );
   }
 
-  async handleTries() {
-    if (
-      (this.startingTime &&
-        Number(new Date()) - Number(this.startingTime) > 10 * 60 * 1000) ||
-      this.status === KeeperStatus.STOPPED
-    ) {
-      this.tries = 0;
-    } else {
-      this.tries += 1;
-    }
-    await KeeperModel.updateOne(
-      { _id: this._id },
-      {
-        tries: this.tries,
-      }
-    );
-  }
-
-  async resetTries() {
-    this.tries = 0;
-    await KeeperModel.updateOne(
-      { _id: this._id },
-      {
-        tries: this.tries,
-      }
-    );
-  }
-
   handleBalances() {
     this.getKeeperBalances();
     setInterval(() => {
-      this.getKeeperBalances();
+      if (this.status !== KeeperStatus.STOPPED) {
+        this.getKeeperBalances();
+      }
     }, this.transactionInterval);
   }
 
@@ -515,7 +405,9 @@ class Keeper {
   handleTransactions() {
     this.getKeeperTransactions();
     setInterval(() => {
-      this.getKeeperTransactions();
+      if (this.status !== KeeperStatus.STOPPED) {
+        this.getKeeperTransactions();
+      }
     }, this.transactionInterval);
   }
 
@@ -545,11 +437,26 @@ class Keeper {
     }
   }
 
-  getLogs() {
-    if (!this._id) throw new Error("Can't get logs of a not setted keeper");
-    const logsFile = getLogsFile(this._id);
-    const logs = fs.readFileSync(logsFile).toString();
-    return logs;
+  async getLogs() {
+    try {
+      const logs = await this.service?.logs({
+        stderr: true,
+        stdout: true,
+        timestamps: true,
+      });
+
+      const formattedLogs = String(logs).replace(/\S*2023\S*/g, (foo) => {
+        const pattern = /.*2023/g;
+        const result = foo.replace(pattern, "2023");
+
+        return `\n${result}`;
+      });
+
+      return formattedLogs;
+    } catch (err) {
+      console.error(err);
+      return "";
+    }
   }
 
   getStatusName(status: KeeperStatus) {
@@ -573,6 +480,24 @@ class Keeper {
 
   getStatus() {
     return this.getStatusName(this.status);
+  }
+
+  async getTaskStatus() {
+    if (this.status === KeeperStatus.STOPPED) return "";
+    console.log("trying to get service");
+    try {
+      const service = docker.getService(String(this.serviceName));
+
+      const serviceTasks = await docker.listTasks({
+        service: service.ID,
+      });
+
+      //console.log(await service.logs({ stdout: true, stderr: true }));
+      return serviceTasks[0].Status.State;
+    } catch (err) {
+      return "";
+      console.log(err);
+    }
   }
 
   getTransactions() {
@@ -619,6 +544,7 @@ class Keeper {
       logs: this.getLogs(),
       transactions: this.getTransactions(),
       balances: this.getBalances(),
+      taskStatus: this.getTaskStatus(),
       unseenNotifsCount:
         await this.notificationService.getUnseenNotificationsCountOfKeeper(
           this.wallet?.address

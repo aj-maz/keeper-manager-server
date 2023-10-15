@@ -15,16 +15,16 @@ services:
       - keepers-network
     env_file:
       - .env
-  #analytics-server:
-  #  image: lib/rai-analytics-server
-  #  container_name: rai-analytics-server
-  #  build: lib/rai-analytics-server/.
-  #  depends_on:
-  #    - redis
-  #  env_file:
-  #    - .env
-  #  networks:
-  #    - keepers-network
+  analytics-server:
+    image: lib/rai-analytics-server
+    container_name: rai-analytics-server
+    build: lib/rai-analytics-server/.
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    networks:
+      - keepers-network
   manager-server:
     image: manager-server
     container_name: manager-server
@@ -36,6 +36,7 @@ services:
       - ./src:/manager/src
       - ./nodemon.json:/manager/src/nodemon.json
       - ./files:/manager/files
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - redis
       - mongodb

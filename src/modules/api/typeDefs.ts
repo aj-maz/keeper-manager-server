@@ -110,6 +110,7 @@ const typeDefs = `#graphql
         balances: KeeperBalances
         unseenNotifsCount: Int
         notifications: [Notification]
+        taskStatus: String!
     }
 
     type Collateral {

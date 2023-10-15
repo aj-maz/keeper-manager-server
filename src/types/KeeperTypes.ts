@@ -25,6 +25,7 @@ export interface IKeeper {
   status: KeeperStatus;
   containerId: string | undefined;
   tries: number;
+  serviceName: string;
 }
 
 export interface KeeperBalances {

@@ -12,9 +12,9 @@ class KeeperManager {
   }
 
   async loadKeepers() {
-    const keeperIds: Array<mongoose.Types.ObjectId> = []; /* (
+    const keeperIds: Array<mongoose.Types.ObjectId> = (
       await KeeperModel.find({})
-    ).map((keeper) => keeper._id);*/
+    ).map((keeper) => keeper._id);
     const loadedKeepers = await Promise.all(
       keeperIds.map(async (id) => {
         const keeper = new Keeper(this.notificationService);

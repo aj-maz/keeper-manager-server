@@ -140,7 +140,7 @@ const resolverCreator = async ({
       ) => {
         await protectRoute(address);
         const keeper = keeperManager.getKeeper(keeperId);
-        return keeper?.restartKeeper();
+        return keeper?.handleService();
       },
       exportWallet: async (
         _: any,
@@ -157,9 +157,9 @@ const resolverCreator = async ({
         { address }: { address: string }
       ) => {
         await protectRoute(address);
-        const keeper = keeperManager.getKeeper(keeperId);
-        console.log(keeper?._id);
-        keeper?.setLogs(true);
+        //const keeper = keeperManager.getKeeper(keeperId);
+        //console.log(keeper?._id);
+        //keeper?.setLogs(true);
         return "done";
       },
     },

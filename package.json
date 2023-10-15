@@ -9,6 +9,7 @@
     "start": "npm run build && node build/index.js"
   },
   "devDependencies": {
+    "@types/dockerode": "^3.3.20",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "^20.5.0",
     "@types/secure-random-password": "^0.2.1",
@@ -20,6 +21,7 @@
   "dependencies": {
     "@apollo/server": "^4.9.1",
     "axios": "^1.4.0",
+    "dockerode": "^4.0.0",
     "dotenv": "^16.3.1",
     "eth-sig-util": "^3.0.1",
     "ethereum-checksum-address": "^0.0.8",
@@ -28,8 +30,10 @@
     "ethers": "^6.7.1",
     "geb.js": "^1.1.40",
     "graphql": "^16.8.0",
+    "i": "^0.3.7",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.3",
+    "namesgenerator": "^0.0.1",
     "redis": "^4.6.8",
     "secure-random-password": "^0.2.3",
     "telegraf": "^4.12.2"

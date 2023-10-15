@@ -6,8 +6,6 @@ const connectDB = async () => {
     MONGODB_HOST,
     MONGODB_DATABASE_NAME,
     MONGODB_PORT,
-    MONGO_INITDB_ROOT_USERNAME,
-    MONGO_INITDB_ROOT_PASSWORD,
   } = process.env;
 
   const dbUrl = `${MONGODB_PROTOCOL}://${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE_NAME}`;
