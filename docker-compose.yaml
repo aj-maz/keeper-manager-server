@@ -60,7 +60,7 @@ services:
       - keepers-network
     env_file:
       - .env
-    nginx:
+  nginx:
     image: nginx:latest
     container_name: nginx
     ports:
