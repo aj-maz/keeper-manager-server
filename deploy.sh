@@ -15,9 +15,7 @@ sudo apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-git submodule update --force --recursive --init 
-
-docker swarm init
+docker swarm init --advertise-addr 127.0.0.1
 
 mkdir db
 mkdir files
