@@ -25,6 +25,19 @@ services:
       - .env
     networks:
       - keepers-network
+  manager-client:
+    image: manager-client
+    container_name: manager-client
+    build:
+      context: lib/client/.
+      dockerfile: Dockerfile
+    command: npm run start
+    expose:
+      - "3000"
+    networks:
+      - keepers-network
+    env_file:
+      - .env
   manager-server:
     image: manager-server
     container_name: manager-server
@@ -40,16 +53,25 @@ services:
     depends_on:
       - redis
       - mongodb
-    #  - analytics-server
     expose:
       - "4000"
-    ports:
-      - "4000:4000"
-    command: npm run start:dev
+    command: npm run start
     networks:
       - keepers-network
     env_file:
       - .env
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - manager-server
+      - manager-client
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - keepers-network
 
 networks:
   keepers-network:

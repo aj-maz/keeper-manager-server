@@ -92,7 +92,6 @@ cp .temp.env .env
 
 Open the `.env` file in a text editor and fill in the following environment variables with your specific values:
 
-- `PASSWORD`: Set a secure password for the Keeper Manager.
 - `COVALENT_KEY`: Obtain a Covalent API key.
 - `JWT_SECRET`: Set a secret key for JSON Web Token (JWT) authentication.
 - `INITIAL_USER`: Define an initial user for the Keeper Manager.

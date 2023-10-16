@@ -7,6 +7,8 @@ COPY package.json yarn.lock ./
 
 RUN yarn install
 
+COPY ./tsconfig.json ./tsconfig.json
+
 COPY . .
 
 FROM base as production

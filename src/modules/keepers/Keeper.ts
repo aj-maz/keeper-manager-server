@@ -276,8 +276,7 @@ class Keeper {
             {
               Type: "bind",
               // TODO: change it to be read from .env
-              Source:
-                "/Users/ajand/Projects/keeper-manager/server/files/wallets",
+              Source: process.env.WALLET_SOURCE_MOUNT,
               Target: "/keystore",
             },
           ],
