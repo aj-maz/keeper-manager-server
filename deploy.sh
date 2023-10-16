@@ -15,9 +15,12 @@ sudo apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-git submodule update --force --recursive --init --remote
+git submodule update --force --recursive --init 
 
 docker swarm init
+
+mkdir db
+mkdir files
 
 cd lib/rai-analytics-server
 docker build -t analytics-server .
@@ -42,3 +45,7 @@ echo "manager-service image built"
 
 
 docker stack deploy -c docker-compose.yaml main-app
+
+sleep 30
+
+docker stack deploy -c docker-compose-nginx nginx-server
