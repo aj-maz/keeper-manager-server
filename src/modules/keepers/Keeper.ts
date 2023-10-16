@@ -257,7 +257,7 @@ class Keeper {
       Name: this.serviceName,
       TaskTemplate: {
         ContainerSpec: {
-          Image: "tai-keeper",
+          Image: this.systemImage,
           Args: [
             "--rpc-uri",
             this.rpcUri,
