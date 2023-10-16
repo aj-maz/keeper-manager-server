@@ -48,4 +48,4 @@ docker stack deploy -c docker-compose.yaml main-app
 
 sleep 30
 
-docker stack deploy -c docker-compose-nginx nginx-server
+docker stack deploy -c docker-compose-nginx.yaml nginx-server
