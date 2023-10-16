@@ -41,7 +41,7 @@ git submodule update --force --recursive --init --remote
 docker build -t rai-keeper .
 cd ..
 
-git cloen https://github.com/Ajand/GEB-Keeper-Manager-client.git client
+git clone https://github.com/Ajand/GEB-Keeper-Manager-client.git client
 cd client
 docker build -t manager-client .
 echo "manager-client image built"
