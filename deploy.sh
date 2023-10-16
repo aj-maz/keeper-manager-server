@@ -23,8 +23,8 @@ mkdir db
 mkdir files
 
 cd lib/rai-analytics-server
-docker build -t analytics-server .
-echo "analytics server image built"
+docker build -t rai-analytics-server .
+echo "rai-analytics-server server image built"
 cd ..
 cd rai-keeper
 docker build -t rai-keeper .

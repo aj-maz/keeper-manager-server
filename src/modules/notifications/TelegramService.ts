@@ -2,9 +2,10 @@ import { Telegraf } from "telegraf";
 import TelegramSubscribers from "../../models/telegram.model";
 
 class TelegramService {
+  private static instance: TelegramService | null = null;
   bot: Telegraf;
 
-  constructor() {
+  private constructor() {
     const botToken = process.env.BOT_TOKEN;
     if (!botToken) {
       throw new Error("Telegram token is not provided");
@@ -18,6 +19,13 @@ class TelegramService {
     });
 
     this.bot.launch();
+  }
+
+  static getInstance(): TelegramService {
+    if (this.instance === null) {
+      this.instance = new TelegramService();
+    }
+    return this.instance;
   }
 
   async getTelegramSubscribers() {

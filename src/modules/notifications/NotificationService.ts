@@ -8,7 +8,7 @@ class NotificationService {
   telegramService: TelegramService;
 
   constructor() {
-    this.telegramService = new TelegramService();
+    this.telegramService = TelegramService.getInstance();
   }
 
   async create(
