@@ -13,6 +13,6 @@ COPY . .
 
 FROM base as production
 
-RUN rimraf ./build && tsc
+RUN yarn build
 
 
