@@ -16,7 +16,7 @@ services:
     env_file:
       - .env
   analytics-server:
-    image: lib/rai-analytics-server
+    image: rai-analytics-server
     container_name: rai-analytics-server
     build: lib/rai-analytics-server/.
     depends_on:
