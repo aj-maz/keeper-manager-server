@@ -21,6 +21,7 @@ docker swarm init
 
 mkdir db
 mkdir files
+mkdir files/wallets
 
 cd lib/rai-analytics-server
 docker build -t rai-analytics-server .
@@ -45,7 +46,3 @@ echo "manager-service image built"
 
 
 docker stack deploy -c docker-compose.yaml main-app
-
-sleep 30
-
-docker stack deploy -c docker-compose-nginx.yaml nginx-server

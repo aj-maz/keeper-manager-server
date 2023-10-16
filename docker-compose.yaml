@@ -60,5 +60,14 @@ services:
       - keepers-network
     env_file:
       - .env
+    nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - keepers-network
 networks:
   keepers-network:
