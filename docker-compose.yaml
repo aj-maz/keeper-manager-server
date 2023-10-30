@@ -63,6 +63,7 @@ services:
   nginx:
     image: nginx:latest
     container_name: nginx
+    restart: on-failure
     ports:
       - "80:80"
     volumes:
