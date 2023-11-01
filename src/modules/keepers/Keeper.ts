@@ -60,6 +60,7 @@ class Keeper {
   tries: number;
 
   serviceName: string | undefined;
+  passwordSecretName: string | undefined;
   service: Docker.Service | undefined;
 
   containerId: string | undefined;
@@ -151,6 +152,7 @@ class Keeper {
     options,
   }: KeeperCreationInput) {
     const password = passwordGenerator.randomPassword({ length: 32 });
+
     if (!password) {
       throw new Error("Wallet password is not provided");
     }
@@ -159,6 +161,12 @@ class Keeper {
     //await wallet.load();
 
     this.serviceName = `${network}${collateral}_${this.wallet.address}`;
+    this.passwordSecretName = `${this.serviceName}_wp`;
+
+    docker.createSecret({
+      Name: this.passwordSecretName,
+      Data: btoa(password),
+    });
 
     // create the keeper - set properties
     const keeperDoc = new KeeperModel({
@@ -253,6 +261,13 @@ class Keeper {
       throw new Error("Keeper is not initialized properly");
     }
 
+    const secrets = await docker.listSecrets();
+    const secretId = secrets.find((secret) => {
+      if (secret.Spec) {
+        return secret.Spec.Name === this.passwordSecretName;
+      }
+    })?.ID;
+
     const serviceParams = {
       Name: this.serviceName,
       TaskTemplate: {
@@ -264,13 +279,25 @@ class Keeper {
             "--eth-from",
             ethers.getAddress(String(this.wallet?.address)),
             "--eth-key",
-            `key_file=/keystore/key-${this.wallet.address.toLowerCase()}.json,pass_file=/keystore/${this.wallet.address.toLowerCase()}.pass`,
+            `key_file=/keystore/key-${this.wallet.address.toLowerCase()}.json,pass_file=/run/secrets/wallet_password`,
             "--safe-engine-system-coin-target",
             "ALL",
             "--type=collateral",
             "--collateral-type",
             this.collateral,
             ...this.options.map((option) => `--${option}`),
+          ],
+          Secrets: [
+            {
+              File: {
+                Name: "wallet_password", // The target filename
+                UID: "0", // The UID of the file
+                GID: "0", // The GID of the file
+                Mode: 444, // The file permissions (e.g., 444 for read-only)
+              },
+              SecretName: this.passwordSecretName,
+              SecretID: secretId,
+            },
           ],
           Mounts: [
             {
@@ -283,6 +310,8 @@ class Keeper {
         },
       },
     };
+
+    console.log(JSON.stringify(serviceParams));
 
     try {
       // @ts-ignore
