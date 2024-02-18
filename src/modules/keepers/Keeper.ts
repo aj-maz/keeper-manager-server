@@ -58,6 +58,8 @@ class Keeper {
 
   status: KeeperStatus;
   tries: number;
+  fromBlock: number | undefined | string;
+  selector: string | undefined;
 
   serviceName: string | undefined;
   passwordSecretName: string | undefined;
@@ -206,6 +208,10 @@ class Keeper {
     const selectedNetwork = selectedSystem?.networks.find(
       (system) => system.name.toLowerCase() == networkName.toLowerCase()
     );
+
+    this.fromBlock = selectedNetwork?.fromBlock;
+    this.selector = selectedNetwork?.selector;
+
     this.covalentIdentifier = selectedNetwork?.covalentNetworkIdentifier;
     this.systemCoinAddress = selectedNetwork?.systemCoin;
     this.collateralAddress = selectedNetwork?.collaterals.find(
@@ -268,6 +274,24 @@ class Keeper {
       }
     })?.ID;
 
+    console.log(
+      "running service args: ",
+      "--rpc-uri",
+      this.rpcUri,
+      "--eth-from",
+      ethers.getAddress(String(this.wallet?.address)),
+      "--eth-key",
+      `key_file=/keystore/key-${this.wallet.address.toLowerCase()}.json,pass_file=/run/secrets/wallet_password`,
+      "--safe-engine-system-coin-target",
+      "ALL",
+      "--type=collateral",
+      "--collateral-type",
+      this.collateral,
+      ...(this.fromBlock ? ["--from-block", String(this.fromBlock)] : []),
+      ...(this.selector ? ["--network", String(this.selector)] : []),
+      ...this.options.map((option) => `--${option}`)
+    );
+
     const serviceParams = {
       Name: this.serviceName,
       TaskTemplate: {
@@ -285,6 +309,8 @@ class Keeper {
             "--type=collateral",
             "--collateral-type",
             this.collateral,
+            ...(this.fromBlock ? ["--from-block", String(this.fromBlock)] : []),
+            ...(this.selector ? ["--network", String(this.selector)] : []),
             ...this.options.map((option) => `--${option}`),
           ],
           Secrets: [
@@ -307,6 +333,7 @@ class Keeper {
               Target: "/keystore",
             },
           ],
+          StopGracePeriod: 120000000000,
         },
       },
     };
@@ -480,7 +507,9 @@ class Keeper {
         return `\n${result}`;
       });
 
-      return formattedLogs;
+      console.log(logs);
+      return logs;
+      //return formattedLogs;
     } catch (err) {
       console.error(err);
       return "";
