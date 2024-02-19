@@ -39,6 +39,11 @@ git submodule update --force --recursive --init --remote
 docker build -t rai-keeper .
 cd ..
 
+git clone https://github.com/Ajand/HAI-Keeper.git hai-keeper
+cd hai-keeper
+docker build -t hai-keeper .
+cd ..
+
 git clone https://github.com/Ajand/GEB-Keeper-Manager-client.git client
 cd client
 docker build -t manager-client .
