@@ -15,6 +15,10 @@ sudo apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+sudo systemctl enable docker.service
+sudo systemctl start docker.service
+
+
 docker swarm init --advertise-addr 127.0.0.1
 
 mkdir db
