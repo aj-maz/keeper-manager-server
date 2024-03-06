@@ -18,7 +18,12 @@ class KeeperManager {
     const loadedKeepers = await Promise.all(
       keeperIds.map(async (id) => {
         const keeper = new Keeper(this.notificationService);
-        await keeper.load(id);
+        try {
+          await keeper.load(id);
+        } catch (error) {
+          console.error(`Failed to load keeper :${id}`);
+          console.error(error);
+        }
         return keeper;
       })
     );
