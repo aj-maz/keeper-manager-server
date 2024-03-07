@@ -111,6 +111,7 @@ class Keeper {
         await this.wallet.load(keeper.wallet);
         this.status = keeper.status;
         this.serviceName = keeper.serviceName;
+        this.passwordSecretName = `${this.serviceName}_wp`;
         this.tries = keeper.tries;
         this.setSystemParams();
       } else {
@@ -274,23 +275,16 @@ class Keeper {
       }
     })?.ID;
 
-    console.log(
-      "running service args: ",
-      "--rpc-uri",
-      this.rpcUri,
-      "--eth-from",
-      ethers.getAddress(String(this.wallet?.address)),
-      "--eth-key",
-      `key_file=/keystore/key-${this.wallet.address.toLowerCase()}.json,pass_file=/run/secrets/wallet_password`,
-      "--safe-engine-system-coin-target",
-      "ALL",
-      "--type=collateral",
-      "--collateral-type",
-      this.collateral,
-      ...(this.fromBlock ? ["--from-block", String(this.fromBlock)] : []),
-      ...(this.selector ? ["--network", String(this.selector)] : []),
-      ...this.options.map((option) => `--${option}`)
-    );
+    console.debug("current secret:: ", {
+      File: {
+        Name: "wallet_password", // The target filename
+        UID: "0", // The UID of the file
+        GID: "0", // The GID of the file
+        Mode: 444, // The file permissions (e.g., 444 for read-only)
+      },
+      SecretName: this.passwordSecretName,
+      SecretID: secretId,
+    });
 
     const serviceParams = {
       Name: this.serviceName,
