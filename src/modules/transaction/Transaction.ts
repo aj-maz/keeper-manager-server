@@ -92,9 +92,9 @@ class Transaction {
           await this.notificationService.create(
             String(this.keeperAddress),
             {
-              name: event.decoded.name,
+              name: event.decoded ? event.decoded.name : "unknown",
               context: "transaction",
-              params: event.decoded.params,
+              params: event.decoded ? event.decoded.params : [],
             },
             ethers.id(
               JSON.stringify({ hash: this.hash, ...event.decoded.params })

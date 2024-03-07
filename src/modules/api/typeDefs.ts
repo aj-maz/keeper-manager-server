@@ -27,7 +27,7 @@ const typeDefs = `#graphql
         sender_address_label: String
         sender_logo_url: String!
         raw_log_data: String!
-        decoded: DecodedLog!
+        decoded: DecodedLog
     }
 
     type GasMetadata {
