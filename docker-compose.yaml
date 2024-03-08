@@ -55,7 +55,7 @@ services:
       - mongodb
     expose:
       - "4000"
-    command: npm run start
+    command: npm run start:dev
     networks:
       - keepers-network
     env_file:
