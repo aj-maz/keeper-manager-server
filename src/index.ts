@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
-import connectDB from "./db";
+import { connectorFactory } from "./db";
 
 import KeeperManager from "./modules/keepers/KeepersManager";
 import resolverCreator from "./modules/api/resolvers";
@@ -15,10 +15,27 @@ import jwt from "jsonwebtoken";
 import logger from "@lib/logger";
 
 const main = async () => {
-  await connectDB();
+  const {
+    MONGODB_PROTOCOL = "mongodb",
+    MONGODB_HOST = "mongodb",
+    MONGODB_DATABASE_NAME = "geb_keepers_manager",
+    MONGODB_PORT = "27017",
+  } = process.env;
 
-  /*const notificationService = new NotificationService();
-  const analyticsService = new AnalyticsService();
+  const dbConnector = connectorFactory(
+    {
+      protocol: MONGODB_PROTOCOL,
+      host: MONGODB_HOST,
+      database: MONGODB_DATABASE_NAME,
+      port: MONGODB_PORT,
+    },
+    logger
+  );
+
+  await dbConnector();
+
+  //const notificationService = new NotificationService();
+  /* const analyticsService = new AnalyticsService();
 
   const keeperManager = new KeeperManager(notificationService);
   await keeperManager.loadKeepers();

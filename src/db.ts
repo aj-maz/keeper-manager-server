@@ -1,43 +1,65 @@
 import mongoose from "mongoose";
+import { Logger } from "pino";
 
-import logger from "@lib/logger";
+export interface MongoDBConnectionParams {
+  protocol: string;
+  host: string;
+  database: string;
+  port: string;
+}
 
-const connectDB = async () => {
-  const {
-    MONGODB_PROTOCOL,
-    MONGODB_HOST,
-    MONGODB_DATABASE_NAME,
-    MONGODB_PORT,
-  } = process.env;
+export const getMongoDBUrl = ({
+  protocol,
+  host,
+  database,
+  port,
+}: MongoDBConnectionParams) => {
+  const dbUrl = `${protocol}://${host}:${port}/${database}`;
+  return dbUrl;
+};
 
-  const dbUrl = `${MONGODB_PROTOCOL}://${MONGODB_HOST}:${MONGODB_PORT}/${MONGODB_DATABASE_NAME}`;
-
-  const mdbLogger = logger.child({
-    contenxt: "databse",
-    variant: "mongodb",
-    functionality: "connection",
-    dbName: MONGODB_DATABASE_NAME,
-    dbUrl,
-  });
-
-  mdbLogger.trace(
-    `Preparing to connect to the MongoDB database: ${MONGODB_DATABASE_NAME}`
-  );
+export const connectDB = async (
+  dbUrl: string,
+  database: string,
+  logger: Logger
+) => {
+  logger.trace(`Preparing to connect to the MongoDB database: ${database}`);
 
   try {
-    mdbLogger.debug(
-      `Attempting to connect to the mongodb database: ${MONGODB_DATABASE_NAME}`
-    );
-    await mongoose.connect(dbUrl);
-    mdbLogger.info(
-      `Connected to the mongodb database: ${MONGODB_DATABASE_NAME}`
-    );
+    logger.debug(`Attempting to connect to the mongodb database: ${database}`);
+    const connection = await mongoose.connect(dbUrl);
+
+    logger.info(`Connected to the mongodb database: ${database}`);
+
+    return {
+      params: {
+        dbUrl,
+        database,
+        logger,
+      },
+      connection,
+    };
   } catch (err) {
-    mdbLogger.error(`Error connecting to the database`, {
+    logger.error(`Error connecting to the database`, {
       error: err,
     });
     throw err; // Re-throw the error to propagate it upwards
   }
 };
 
-export default connectDB;
+export const connectorFactory = (
+  { protocol, host, database, port }: MongoDBConnectionParams,
+  logger: Logger
+) => {
+  const dbUrl = getMongoDBUrl({ protocol, host, database, port });
+
+  const mdbLogger = logger.child({
+    contenxt: "database",
+    variant: "mongodb",
+    functionality: "connection",
+    dbName: database,
+    dbUrl,
+  });
+
+  return () => connectDB(dbUrl, database, mdbLogger);
+};
