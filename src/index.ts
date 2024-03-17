@@ -12,11 +12,9 @@ import AnalyticsService from "./modules/analytics/AnalyticsService";
 import Users from "./modules/users/Users";
 import jwt from "jsonwebtoken";
 
-import logger from "./lib/Logger/logger";
+import logger from "@lib/logger";
 
 const main = async () => {
-  logger.warn("warn");
-
   await connectDB();
 
   /*const notificationService = new NotificationService();
