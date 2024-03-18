@@ -189,8 +189,8 @@ export const systems: Array<System> = [
         name: "Optimism",
         nativeCoin: "ETH",
         covalentNetworkIdentifier: "optimism-mainnet",
-        selector: "optimism",
-        systemCoin: '0x10398AbC267496E49106B07dd6BE13364D10dC71',
+        selector: "mainnet",
+        systemCoin: "0x10398AbC267496E49106B07dd6BE13364D10dC71",
         fromBlock: 116055145,
         collaterals: [
           {
@@ -250,7 +250,7 @@ export const systems: Array<System> = [
         nativeCoin: "SepoliaETH",
         covalentNetworkIdentifier: "optimism-sepolia",
         selector: "optimism-sepolia",
-        systemCoin: '0xd87Dd8e541BB8027f5d7292b2096a59DCa056C76',
+        systemCoin: "0xd87Dd8e541BB8027f5d7292b2096a59DCa056C76",
         fromBlock: 8291429,
         collaterals: [
           {
