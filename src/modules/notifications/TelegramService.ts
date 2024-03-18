@@ -1,4 +1,5 @@
 import { Telegraf } from "telegraf";
+import { Logger } from "pino";
 import TelegramSubscribers from "../../models/telegram.model";
 
 class TelegramService {

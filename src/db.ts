@@ -28,7 +28,6 @@ export const connectDB = async (
   try {
     logger.debug(`Attempting to connect to the mongodb database: ${database}`);
     const connection = await mongoose.connect(dbUrl);
-
     logger.info(`Connected to the mongodb database: ${database}`);
 
     return {

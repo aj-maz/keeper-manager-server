@@ -14,12 +14,15 @@ import jwt from "jsonwebtoken";
 
 import logger from "@lib/logger";
 
+import { instantiateBot } from "./modules/notifications/TelegramService/telegramService";
+
 const main = async () => {
   const {
     MONGODB_PROTOCOL = "mongodb",
     MONGODB_HOST = "mongodb",
     MONGODB_DATABASE_NAME = "geb_keepers_manager",
     MONGODB_PORT = "27017",
+    BOT_TOKEN,
   } = process.env;
 
   const dbConnector = connectorFactory(
@@ -32,7 +35,14 @@ const main = async () => {
     logger
   );
 
-  await dbConnector();
+  //await dbConnector();
+
+  try {
+    const bot = instantiateBot(logger)("asdw");
+    instantiateBot(logger)(BOT_TOKEN);
+  } catch (err) {
+    console.error(err);
+  }
 
   //const notificationService = new NotificationService();
   /* const analyticsService = new AnalyticsService();

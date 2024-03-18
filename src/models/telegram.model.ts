@@ -1,12 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 
-const TelegramSubscribersSchema = new Schema({
+const TelegramConversationSchema = new Schema({
   conversationId: { type: "number", required: true },
 });
 
-const TelegramSubscribers = mongoose.model(
-  "telegramSub",
-  TelegramSubscribersSchema
+const TelegramConversationModel = mongoose.model(
+  "telegramConversation",
+  TelegramConversationSchema
 );
 
-export default TelegramSubscribers;
+export default TelegramConversationModel;
