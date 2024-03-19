@@ -1,39 +1,108 @@
 import * as redis from "redis";
+import parentLogger from "../../lib/logger";
+
+const logger = parentLogger.child({
+  module: "analytics-service",
+});
 
 class AnalyticsService {
   redisClient: ReturnType<typeof redis.createClient> | undefined;
 
   constructor() {
+    logger.trace("Constructing analytics server", {
+      method: "constructor",
+    });
+    logger.debug("Preparing to init the analytics server", {
+      method: "constructor",
+    });
     this.init();
   }
 
   async init() {
-    const client = redis.createClient({
-      url: `${process.env.REDIS_PROTOCOL}://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+    logger.trace("Initating the analytics server", {
+      method: "init",
     });
-    await client.connect();
-    this.redisClient = client;
-    this.startFetchig();
+    try {
+      const redisUrl = `${process.env.REDIS_PROTOCOL}://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`;
+      logger.debug("Creating a redis client", {
+        redisUrl,
+        method: "init",
+      });
+      const client = redis.createClient({
+        url: redisUrl,
+      });
+      logger.debug("Redis client created", {
+        redisUrl,
+        method: "init",
+      });
+      await client.connect();
+      logger.info("Redis client connected", {
+        redisUrl,
+        method: "init",
+      });
+      this.redisClient = client;
+      logger.debug("Redis client assigned to the analytics server", {
+        redisUrl,
+        method: "init",
+      });
+    } catch (err) {
+      logger.error("Failed to handle redis client in the analytics server", {
+        error: err,
+      });
+      throw err;
+    }
   }
 
   isReady() {
-    return !!this.redisClient;
+    const isReady = !!this.redisClient;
+    logger.debug("Checking if the redis client is ready", {
+      method: "isReady",
+      isReady,
+    });
+    return isReady;
   }
 
-  startFetchig() {}
-
   async getSafes() {
+    logger.trace("Getting safes from analytics server", {
+      method: "getSafes",
+    });
     const client = this.redisClient;
-    if (!client) return [];
-    const keys = await client.KEYS("safe:*");
-    const allSafeData = await Promise.all(
-      keys.map(async (key) => {
-        const data = await client.hGetAll(key);
-        return data;
-      })
-    );
 
-    return allSafeData;
+    if (!client) {
+      logger.debug(
+        "No client has been assigned to the analytics server so returning empty array",
+        {
+          method: "getSafes",
+        }
+      );
+      return [];
+    }
+
+    try {
+      const targetKeys = "safe:*";
+
+      logger.debug("Getting keys from the redis client", {
+        method: "getSafes",
+      });
+      const keys = await client.KEYS(targetKeys);
+      logger.debug("Getting keys from the redis client", {
+        method: "getSafes",
+      });
+      const allSafeData = await Promise.all(
+        keys.map(async (key) => {
+          const data = await client.hGetAll(key);
+          return data;
+        })
+      );
+      logger.debug("Got all safe data", {
+        method: "getSafes",
+      });
+      return allSafeData;
+    } catch (err) {
+      logger.error("Something goes wrong while getting the safes", {
+        method: "getSafes",
+      });
+    }
   }
 }
 
