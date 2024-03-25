@@ -5,7 +5,7 @@ import NotificationService from "../notifications/NotificationService";
 import parentLogger from "../../lib/logger";
 
 const logger = parentLogger.child({
-  module: "keeperManager",
+  module: "keeper-manager",
 });
 
 class KeeperManager {
