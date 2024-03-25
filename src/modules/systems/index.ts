@@ -1,50 +1,96 @@
+import parentLogger from "../../lib/logger";
+
+const logger = parentLogger.child({
+  module: "notificationService",
+});
+
 const getAllRpcUris = (chainIdentifier: string) => {
+  const getAllRpcUrisLogger = logger.child({
+    method: "getAllRpcUris",
+    chainIdentifier: chainIdentifier,
+  });
+
+  getAllRpcUrisLogger.debug("Retrieving all RPC URIs");
+
   const rpcUris = [];
-  console.log(process.env[`${chainIdentifier}_RPC_URI_${1}`]);
+
+  getAllRpcUrisLogger.debug("Retrieving RPC URIs from environment variables");
+
   for (let i = 1; ; i++) {
     const uri = process.env[`${chainIdentifier}_RPC_URI_${i}`];
+    getAllRpcUrisLogger.debug(`Retrieving RPC URI ${i}`, { uri });
+
     if (!uri) break;
     rpcUris.push(uri);
   }
-  console.log(rpcUris);
+
+  getAllRpcUrisLogger.info("RPC URIs retrieved successfully", { rpcUris });
   return rpcUris;
 };
 
 const rpcGetter = (chainIdentifier: string) => {
-  const rpcUris = getAllRpcUris(chainIdentifier);
-  if (rpcUris.length > 0) {
-    const randomIndex = Math.floor(Math.random() * rpcUris.length);
-    return rpcUris[randomIndex];
-  } else {
-    // Handle the case where no valid RPC URIs are defined
-    throw new Error(`No valid ${chainIdentifier}_RPC_URI variables found.`);
+  const rpcGetterLogger = logger.child({
+    method: "rpcGetter",
+    chainIdentifier: chainIdentifier,
+  });
+  try {
+    rpcGetterLogger.debug("Fetching RPC URIs for chain identifier");
+    const rpcUris = getAllRpcUris(chainIdentifier);
+
+    if (rpcUris.length > 0) {
+      rpcGetterLogger.debug("Selecting a random RPC URI");
+      const randomIndex = Math.floor(Math.random() * rpcUris.length);
+      const selectedRpcUri = rpcUris[randomIndex];
+
+      rpcGetterLogger.info("Random RPC URI selected", { selectedRpcUri });
+      return selectedRpcUri;
+    } else {
+      rpcGetterLogger.error(
+        `No valid ${chainIdentifier}_RPC_URI variables found.`
+      );
+      // Handle the case where no valid RPC URIs are defined
+      throw new Error(`No valid ${chainIdentifier}_RPC_URI variables found.`);
+    }
+  } catch (error) {
+    rpcGetterLogger.error("Error occurred while fetching RPC URI", { error });
+    throw error;
   }
 };
 
 export const networks = {
   mainnet: {
     get rpc_uri() {
-      return rpcGetter("MAINNET");
+      const rpcUri = rpcGetter("MAINNET");
+      logger.debug("Retrieved Mainnet RPC URI", { rpcUri });
+      return rpcUri;
     },
   },
   goerli: {
     get rpc_uri() {
-      return rpcGetter("GOERLI");
+      const rpcUri = rpcGetter("GOERLI");
+      logger.debug("Retrieved Goerli RPC URI", { rpcUri });
+      return rpcUri;
     },
   },
   optimism: {
     get rpc_uri() {
-      return rpcGetter("OPTIMISM");
+      const rpcUri = rpcGetter("OPTIMISM");
+      logger.debug("Retrieved Optimism RPC URI", { rpcUri });
+      return rpcUri;
     },
   },
   optimismgoerli: {
     get rpc_uri() {
-      return rpcGetter("OPTIMISMGOERLI");
+      const rpcUri = rpcGetter("OPTIMISMGOERLI");
+      logger.debug("Retrieved Optimism Goerli RPC URI", { rpcUri });
+      return rpcUri;
     },
   },
   optimismsepolia: {
     get rpc_uri() {
-      return rpcGetter("OPTIMISMSEPOLIA");
+      const rpcUri = rpcGetter("OPTIMISMSEPOLIA");
+      logger.debug("Retrieved Optimism Sepolia RPC URI", { rpcUri });
+      return rpcUri;
     },
   },
 };
@@ -280,5 +326,15 @@ export const systems: Array<System> = [
 ];
 
 export const getSystems = () => {
-  return systems;
+  const getSystemsLogger = logger.child({
+    method: "getSystems",
+  });
+
+  try {
+    getSystemsLogger.info("Returning systems", { systems });
+    return systems;
+  } catch (error) {
+    getSystemsLogger.error("Error occurred while fetching systems", { error });
+    throw error;
+  }
 };
