@@ -15,7 +15,7 @@ processors:
   - add_kubernetes_metadata: ~
 
 output.elasticsearch:
-  hosts: [${ELASTIC_HOST}]
+  hosts: "${ELASTIC_HOST}"
   api_key: ${ELASTIC_API_KEY}
   output.elasticsearch.index: "keeper-manager1.0-%{[agent.version]}"
   setup.template.name: "keeper-manager1.0-%{[agent.version]}"

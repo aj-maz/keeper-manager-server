@@ -3,6 +3,7 @@ mkdir files
 mkdir files/wallets
 
 mkdir images 
+mkdir logs 
 
 cd images
 git clone https://github.com/ajand/keeper-manager-analytics-server.git rai-analytics-server

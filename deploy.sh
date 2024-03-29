@@ -24,6 +24,7 @@ docker swarm init --advertise-addr 127.0.0.1
 mkdir db
 mkdir files
 mkdir files/wallets
+mkdir logs
 
 cd ..
 git clone https://github.com/ajand/keeper-manager-analytics-server.git rai-analytics-server
