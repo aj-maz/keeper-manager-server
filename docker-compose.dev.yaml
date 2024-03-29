@@ -50,6 +50,7 @@ services:
       - ./nodemon.json:/manager/src/nodemon.json
       - ./files:/manager/files
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./logs:/app/logs
     depends_on:
       - redis
       - mongodb
@@ -60,6 +61,14 @@ services:
       - keepers-network
     env_file:
       - .env
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.0
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./logs:/app/logs
+    command: ["filebeat", "-e", "-c", "/usr/share/filebeat/filebeat.yml"]
+    environment:
+      - ELASTIC_API_KEY=${ELASTIC_API_KEY}
   nginx:
     image: nginx:latest
     container_name: nginx

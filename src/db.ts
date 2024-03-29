@@ -1,6 +1,14 @@
 import mongoose from "mongoose";
 
+import parentLogger from "./lib/logger";
+
+const logger = parentLogger.child({ module: "db" });
+
 const connectDB = async () => {
+  const connectLogger = logger.child({ method: "connect" });
+
+  connectLogger.trace("Connecting to the database...");
+
   const {
     MONGODB_PROTOCOL,
     MONGODB_HOST,
@@ -12,9 +20,12 @@ const connectDB = async () => {
 
   try {
     await mongoose.connect(dbUrl);
-    console.log("db connected", MONGODB_DATABASE_NAME);
+    connectLogger.info(`Connected to the database: ${MONGODB_DATABASE_NAME}`);
   } catch (err) {
-    console.log(err);
+    connectLogger.error(`Error connecting to the database`, {
+      err,
+    });
+    throw err;
   }
 };
 

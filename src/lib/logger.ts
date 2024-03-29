@@ -1,10 +1,20 @@
 import pino from "pino";
+const { ecsFormat } = require("@elastic/ecs-pino-format");
 
-export default pino({
-  formatters: {
-    level: (label) => {
-      return { level: label.toUpperCase() };
-    },
+// Create a Pino logger instance
+const logger = pino(
+  {
+    level: 10,
+    ...ecsFormat({
+      formatters: {
+        // @ts-ignore
+        level: (label) => {
+          return { level: label.toUpperCase() };
+        },
+      },
+    }),
   },
-  timestamp: pino.stdTimeFunctions.isoTime,
-});
+  pino.destination("/app/logs/server.log")
+);
+
+export default logger;

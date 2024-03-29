@@ -50,6 +50,7 @@ services:
       - ./nodemon.json:/manager/src/nodemon.json
       - ./files:/manager/files
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./logs:/app/logs
     depends_on:
       - redis
       - mongodb

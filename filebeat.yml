@@ -1,0 +1,24 @@
+filebeat.inputs:
+  - type: filestream
+    paths:
+      - /app/logs/server.log
+    parsers:
+      - ndjson:
+        overwrite_keys: true
+        add_error_key: true
+        expand_keys: true
+
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
+
+output.elasticsearch:
+  hosts:
+    [${ELASTIC_HOST}]
+  #  cloud.id: "4fda1d5bc8bf4353b0a83724a11b36e4:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJGI3MjE1OWZiNjU0MzQ1MGNhMjEzNGM1OTQxNzI0MzNhJDY1MGVkZDkwYWUxYzQ3N2I4NDJmMTFhNDJlNGNiZTBh"
+  api_key: ${ELASTIC_API_KEY} #"3MP5Z44BRaEGuMFRvsPx:0X_eEmKwRd-pLX8J7Y-aTA"
+  output.elasticsearch.index: "keeper-manager1.0-%{[agent.version]}"
+  setup.template.name: "keeper-manager1.0-%{[agent.version]}"
+  setup.template.pattern: "keeper-manager1.0-%{[agent.version]}"
