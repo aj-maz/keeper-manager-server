@@ -68,8 +68,8 @@ services:
       - ./logs:/app/logs
     command: ["filebeat", "-e", "-c", "/usr/share/filebeat/filebeat.yml"]
     environment:
-      - ELASTIC_API_KEY=${ELASTIC_API_KEY}
-      - ELASTIC_HOST=${ELASTIC_HOST}
+      env_file:
+        - .env
   nginx:
     image: nginx:latest
     container_name: nginx
