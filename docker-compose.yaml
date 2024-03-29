@@ -67,9 +67,8 @@ services:
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
       - ./logs:/app/logs
     command: ["filebeat", "-e", "-c", "/usr/share/filebeat/filebeat.yml"]
-    environment:
-      env_file:
-        - .env
+    env_file:
+      - .env
   nginx:
     image: nginx:latest
     container_name: nginx
