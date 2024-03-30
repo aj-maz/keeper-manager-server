@@ -221,7 +221,7 @@ const resolverCreator = async ({
             );
             getTokenMutationLogger.info("Generated a new token for the user");
             //@ts-ignore
-            return;
+            return token;
           } else {
             getTokenMutationLogger.error("Signature was mismatched");
             throw new Error("Signature was not mismatched");

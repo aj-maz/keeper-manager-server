@@ -8,7 +8,7 @@ const logger = parentLogger.child({
 });
 
 const addUser = async (address: string) => {
-  const addUserLogger = logger.child({ method: "addUser" });
+  const addUserLogger = logger.child({ method: "addUser", address });
   addUserLogger.trace("Adding user");
 
   try {
@@ -26,7 +26,10 @@ const addUser = async (address: string) => {
 };
 
 const generateNonce = async (address: string) => {
-  const generateNonceLogger = logger.child({ method: "generateNonce" });
+  const generateNonceLogger = logger.child({
+    method: "generateNonce",
+    address,
+  });
   generateNonceLogger.trace("Generating nonce");
 
   try {
@@ -60,7 +63,7 @@ const getAll = async () => {
 };
 
 const get = async (address: string) => {
-  const getLogger = logger.child({ method: "get" });
+  const getLogger = logger.child({ method: "get", address });
   getLogger.trace("Getting user", { address });
 
   try {
@@ -82,7 +85,10 @@ const verifySign = ({
   publicAddress: string;
   nonce: number;
 }) => {
-  const verifySignLogger = logger.child({ method: "verifySign" });
+  const verifySignLogger = logger.child({
+    method: "verifySign",
+    address: publicAddress,
+  });
   verifySignLogger.trace("Verifying signature", { publicAddress, nonce });
 
   try {
