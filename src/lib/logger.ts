@@ -1,10 +1,11 @@
 import pino from "pino";
 const { ecsFormat } = require("@elastic/ecs-pino-format");
 
+const logLevel = process.env.LOG_LEVEL ? process.env.LOG_LEVEL : 30;
 // Create a Pino logger instance
 const logger = pino(
   {
-    level: 10,
+    level: logLevel,
     ...ecsFormat({
       formatters: {
         // @ts-ignore
