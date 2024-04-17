@@ -541,9 +541,13 @@ class Keeper {
           Mounts: [
             {
               Type: "bind",
-              // TODO: change it to be read from .env
               Source: process.env.WALLET_SOURCE_MOUNT,
               Target: "/keystore",
+            },
+            {
+              Type: "bind",
+              Source: process.env.WALLET_SOURCE_MOUNT,
+              Target: "/app/logs",
             },
           ],
           StopGracePeriod: 120000000000,
