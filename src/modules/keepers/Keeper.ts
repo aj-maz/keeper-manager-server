@@ -546,7 +546,7 @@ class Keeper {
             },
             {
               Type: "bind",
-              Source: process.env.WALLET_SOURCE_MOUNT,
+              Source: process.env.LOGS_SOURCE_MOUNT,
               Target: "/app/logs",
             },
           ],
