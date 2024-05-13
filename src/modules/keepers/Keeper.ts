@@ -4,6 +4,10 @@ import mongoose from "mongoose";
 import { ethers } from "ethers";
 import * as passwordGenerator from "secure-random-password";
 import Docker from "dockerode";
+import axios from "axios";
+
+// @ts-ignore
+import { gql, request } from "graphql-request";
 
 import parentLogger from "../../lib/logger";
 
@@ -552,6 +556,11 @@ class Keeper {
           ],
           StopGracePeriod: 120000000000,
         },
+        Networks: [
+          {
+            Target: "main-app_keepers-network",
+          },
+        ],
       },
     };
 
@@ -1131,6 +1140,124 @@ class Keeper {
       });
       console.error(err); // Logging error to console
       return {};
+    }
+  }
+
+  async getContainerName(serviceName: string) {
+    const getContainerNameLogger = logger.child({
+      method: "getContainerName",
+      keeperId: this._id,
+    });
+
+    try {
+      // Get the list of services
+      const services = await this.docker.listServices();
+
+      // Find the service by name
+      const service = services.find((s) => s.Spec?.Name === serviceName);
+      if (!service) {
+        throw new Error(`Service with name ${serviceName} not found`);
+      }
+
+      // Get the tasks for the service
+      const tasks = await docker.listTasks({
+        filters: { service: [service.ID] },
+      });
+      if (!tasks.length) {
+        throw new Error(`No tasks found for service ${serviceName}`);
+      }
+
+      // Find the task that is running
+      const task = tasks.find((t) => t.Status.State === "running");
+      if (!task) {
+        throw new Error(`No running tasks found for service ${serviceName}`);
+      }
+
+      // Get the container ID from the task
+      const containerId = task.Status.ContainerStatus.ContainerID;
+
+      // Get the container details using the container ID
+      const container = docker.getContainer(containerId);
+      const containerInfo = await container.inspect();
+
+      // Return the container name
+      return containerInfo.Name.startsWith("/")
+        ? containerInfo.Name.slice(1)
+        : containerInfo.Name;
+    } catch (error) {
+      getContainerNameLogger.error("Error occurred while getting keeper data", {
+        error: error,
+      });
+    }
+  }
+
+  async queryStatus() {
+    const graphqlLogger = logger.child({
+      method: "querying status",
+      keeperId: this._id,
+    });
+
+    if (!this.serviceName) {
+      throw new Error("no service name");
+    }
+
+    try {
+      const containerName = await this.getContainerName(this.serviceName);
+      if (!containerName) {
+        throw new Error("Container name could not be retrieved");
+      }
+
+      const graphqlEndpoint = `http://${containerName}:4545/graphql`;
+      const query = {
+        query: `
+          query {
+            status
+          }
+        `,
+      };
+
+      const response = await axios.post(graphqlEndpoint, query);
+      console.log("GraphQL response:", response.data.data);
+
+      return response.data.data.status;
+    } catch (error) {
+      graphqlLogger.error(`Error querying Status ${error}`, { error });
+    }
+  }
+
+  async mutateService(mutation: string) {
+    const graphqlLogger = logger.child({
+      method: "mutate service",
+      keeperId: this._id,
+    });
+
+    if (!this.serviceName) {
+      throw new Error("no service name");
+    }
+
+    try {
+      const containerName = await this.getContainerName(this.serviceName);
+      if (!containerName) {
+        throw new Error("Container name could not be retrieved");
+      }
+
+      const graphqlEndpoint = `http://${containerName}:4545/graphql`;
+      const mutationQuery = {
+        query: `
+          mutation {
+            ${mutation}
+          }
+        `,
+      };
+
+      const response = await axios.post(graphqlEndpoint, mutationQuery);
+      graphqlLogger.info("GraphQL mutation response:", response.data.data);
+
+      return response;
+    } catch (error) {
+      graphqlLogger.error(`Error performing GraphQL mutation`, {
+        error,
+      });
     }
   }
 }
