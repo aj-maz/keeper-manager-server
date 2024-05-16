@@ -147,6 +147,7 @@ const typeDefs = `#graphql
         me: User
         keepers: [Keeper!]!
         keeper(id: ID!): Keeper
+        keeperStatus(keeperId: String!): String!
         systems: [System!]!
         raiSafes: [Safe!]!
     }
@@ -170,6 +171,11 @@ const typeDefs = `#graphql
         restartKeeper(keeperId: String!): String
         exportWallet(keeperId: String!): String!
         setKeeperLogs(keeperId: String!): String!
+
+        startMut(keeperId: String!): String!
+        stopMut(keeperId: String!): String!
+        exitSystemCoinMut(keeperId: String!): String!
+        exitCollateralMut(keeperId: String!): String!
     }
 `;
 

@@ -21,6 +21,7 @@
   "dependencies": {
     "@apollo/server": "^4.9.1",
     "@elastic/ecs-pino-format": "^1.5.0",
+    "@graphql-codegen/typescript-graphql-request": "^6.2.0",
     "axios": "^1.4.0",
     "dockerode": "^4.0.0",
     "dotenv": "^16.3.1",
@@ -31,6 +32,7 @@
     "ethers": "^6.7.1",
     "geb.js": "^1.1.40",
     "graphql": "^16.8.0",
+    "graphql-request": "^7.0.1",
     "i": "^0.3.7",
     "jsonwebtoken": "^9.0.1",
     "mongoose": "^7.4.3",

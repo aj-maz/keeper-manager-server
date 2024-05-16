@@ -158,6 +158,15 @@ const resolverCreator = async ({
         });
         return analyticsSafe;
       },
+      keeperStatus: async (
+        _: any,
+        { keeperId }: { keeperId: mongoose.Types.ObjectId }
+      ) => {
+        const keeper = keeperManager.getKeeper(keeperId);
+
+        if (!keeper) return "";
+        return await keeper?.queryStatus();
+      },
     },
     Mutation: {
       getNonce: async (_: any, { address }: { address: string }) => {
@@ -463,6 +472,54 @@ const resolverCreator = async ({
         //const keeper = keeperManager.getKeeper(keeperId);
         //console.log(keeper?._id);
         //keeper?.setLogs(true);
+        return "done";
+      },
+
+      startMut: async (
+        _: any,
+        { keeperId }: { keeperId: mongoose.Types.ObjectId }
+      ) => {
+        const keeper = keeperManager.getKeeper(keeperId);
+
+        if (!keeper) return "";
+        const tx = await keeper?.mutateService("start");
+        console.log(tx);
+        return "done";
+      },
+
+      stopMut: async (
+        _: any,
+        { keeperId }: { keeperId: mongoose.Types.ObjectId }
+      ) => {
+        const keeper = keeperManager.getKeeper(keeperId);
+
+        if (!keeper) return "";
+        const tx = await keeper?.mutateService("stop");
+        console.log(tx);
+        return "done";
+      },
+
+      exitSystemCoinMut: async (
+        _: any,
+        { keeperId }: { keeperId: mongoose.Types.ObjectId }
+      ) => {
+        const keeper = keeperManager.getKeeper(keeperId);
+
+        if (!keeper) return "";
+        const tx = await keeper?.mutateService("exitSystemCoin");
+        console.log(tx);
+        return "done";
+      },
+
+      exitCollateralMut: async (
+        _: any,
+        { keeperId }: { keeperId: mongoose.Types.ObjectId }
+      ) => {
+        const keeper = keeperManager.getKeeper(keeperId);
+
+        if (!keeper) return "";
+        const tx = await keeper?.mutateService("exitCollateral");
+        console.log(tx);
         return "done";
       },
     },
