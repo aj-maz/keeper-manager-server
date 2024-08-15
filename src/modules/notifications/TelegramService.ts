@@ -10,15 +10,19 @@ class TelegramService {
     if (!botToken) {
       throw new Error("Telegram token is not provided");
     }
-    this.bot = new Telegraf(botToken);
+    try {
+      this.bot = new Telegraf(botToken);
 
-    this.bot.start(async (ctx) => {
-      const conversationId = ctx.message.from.id;
-      this.addTelegramSubscriber(conversationId);
-      ctx.reply("Welcome!");
-    });
+      this.bot.start(async (ctx) => {
+        const conversationId = ctx.message.from.id;
+        this.addTelegramSubscriber(conversationId);
+        ctx.reply("Welcome!");
+      });
 
-    this.bot.launch();
+      this.bot.launch();
+    } catch (err) {
+      throw new Error("err");
+    }
   }
 
   static getInstance(): TelegramService {

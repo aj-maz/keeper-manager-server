@@ -116,6 +116,7 @@ const typeDefs = `#graphql
     type Collateral {
         name: String!
         address: String!
+        flashSwapEnabled: Boolean!
     }
   
     type SystemNetwork {

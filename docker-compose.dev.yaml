@@ -5,16 +5,18 @@ services:
     container_name: redis
     networks:
       - keepers-network
+
   mongodb:
     image: mongo:7.0.2-jammy
     container_name: mongodb
     restart: unless-stopped
     volumes:
-      - ./db:/data/db
+      - mongodb_data:/data/db
     networks:
       - keepers-network
     env_file:
       - .env
+
   analytics-server:
     image: rai-analytics-server
     container_name: rai-analytics-server
@@ -25,6 +27,7 @@ services:
       - .env
     networks:
       - keepers-network
+
   manager-client:
     image: manager-client
     container_name: manager-client
@@ -38,6 +41,7 @@ services:
       - keepers-network
     env_file:
       - .env
+
   manager-server:
     image: manager-server
     container_name: manager-server
@@ -61,6 +65,7 @@ services:
       - keepers-network
     env_file:
       - .env
+
   filebeat:
     image: docker.elastic.co/beats/filebeat:7.17.0
     volumes:
@@ -69,6 +74,7 @@ services:
     command: ["filebeat", "-e", "-c", "/usr/share/filebeat/filebeat.yml"]
     env_file:
       - .env
+
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -79,5 +85,9 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf
     networks:
       - keepers-network
+
 networks:
   keepers-network:
+
+volumes:
+  mongodb_data:
